@@ -1,4 +1,4 @@
-# Arena - Konzolos Viadalt Szimuláló Játék
+# Arena - Konzolos Viadal Szimuláló Játék
 
 Az "Arena" egy C# konzolos játék alkalmazás, amely egy egyszerű viadalt szimulál, ahol hősök harcolnak egymással. A játékban a játékos lehetőséget kap arra, hogy kiválassza a harcosok számát, majd a hősök különböző osztályokba tartoznak (Íjász, Kardos, Lovas) és egymás ellen harcolnak. A harcok során a harcosok egymásra támadnak, és a végeredményt a támadás típusa és a védekezés alapján határozzák meg.
 
