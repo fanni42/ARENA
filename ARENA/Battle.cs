@@ -11,6 +11,7 @@ namespace ArenaGame
     {
         public static void StartBattle(List<Hero> heroes)
         {
+            DateTime battleStartTime = DateTime.Now; // Pillanatnyi idő a csata kezdetének rögzítéséhez
             Console.WriteLine(Table.DisplayHeroesTable(heroes));
             Console.WriteLine("Válassz csata típust:");
             Console.WriteLine("1. Rendes csata (Harcok végig nézése)");
@@ -27,7 +28,7 @@ namespace ArenaGame
             int round = 1;
             while (aliveHeroes.Count > 1)
             {
-                WriteLog($"\n{round}. kör:");
+                WriteLog($"\n{round}. kör:", true, battleStartTime);
 
 
                 (Hero attacker, Hero defender) = SelectFighters.SelectRandomFighters(aliveHeroes);
@@ -55,7 +56,7 @@ namespace ArenaGame
 
                 
 
-                WriteLog($"\nTámadó: (#{attacker.UniqueID}) {attacker.Name} ({attacker.Class}) | Védő: (#{defender.UniqueID}) {defender.Name} ({defender.Class})");
+                WriteLog($"\nTámadó: (#{attacker.UniqueID}) {attacker.Name} ({attacker.Class}) | Védő: (#{defender.UniqueID}) {defender.Name} ({defender.Class})", true, battleStartTime);
 
                 string attackType = GetAttackType(attacker.Class, defender.Class);
 
@@ -63,17 +64,17 @@ namespace ArenaGame
                 {
                     int previousHealth = defender.CurrentHealth;
                     defender.CurrentHealth = 0;
-                    WriteLog($"{attacker.Name} sikeresen eltalálta {defender.Name}-t, aki meghalt.");
+                    WriteLog($"{attacker.Name} sikeresen eltalálta {defender.Name}-t, aki meghalt.", true, battleStartTime);
                     string logDead = $"{defender.Name} (#{defender.UniqueID}) életerő változás: {previousHealth} -> 0 (-{previousHealth})";
-                    WriteLog(logDead, false);
+                    WriteLog(logDead, false, battleStartTime);
                 }
                 else if (attackType == "DefenderWins")
                 {
                     int previousHealth = attacker.CurrentHealth;
                     attacker.CurrentHealth = 0;
-                    WriteLog($"{defender.Name} sikeresen eltalálta {attacker.Name}-t, aki meghalt.");
+                    WriteLog($"{defender.Name} sikeresen eltalálta {attacker.Name}-t, aki meghalt.", true, battleStartTime);
                     string logDead = $"{attacker.Name} (#{attacker.UniqueID}) életerő változás: {previousHealth} -> 0 (-{previousHealth})";
-                    WriteLog(logDead, false);
+                    WriteLog(logDead, false, battleStartTime);
                 }
                 else if (attackType == "ILrando")
                 {
@@ -82,18 +83,18 @@ namespace ArenaGame
                     {
                         int previousHealth = defender.CurrentHealth;
                         defender.CurrentHealth = 0;
-                        WriteLog($"{attacker.Name} sikeresen eltalálta {defender.Name}-t, aki meghalt.");
+                        WriteLog($"{attacker.Name} sikeresen eltalálta {defender.Name}-t, aki meghalt.", true, battleStartTime);
                         string logDead = $"{defender.Name} (#{defender.UniqueID}) életerő változás: {previousHealth} -> 0 (-{previousHealth})";
-                        WriteLog(logDead, false);
+                        WriteLog(logDead, false, battleStartTime);
                     }
                     else
                     {
-                        WriteLog($"{attacker.Name} próbálkozott, de {defender.Name} kivédekezte a támadást.");
+                        WriteLog($"{attacker.Name} próbálkozott, de {defender.Name} kivédekezte a támadást.", true, battleStartTime);
                     }
                 }
                 else if (attackType == "Draw")
                 {
-                    WriteLog($"{attacker.Name} és {defender.Name} harca egyenlő erővel zajlott, senki sem sérült.");
+                    WriteLog($"{attacker.Name} és {defender.Name} harca egyenlő erővel zajlott, senki sem sérült.", true, battleStartTime);
                 }
 
                 foreach (var hero in aliveHeroes)
@@ -107,7 +108,7 @@ namespace ArenaGame
                         int healedAmount = hero.CurrentHealth - previousHealth;
 
                         string logMessage = $"{hero.Name} (#{hero.UniqueID}) életerő változás: {previousHealth} -> {hero.CurrentHealth} (+{healedAmount})";
-                        WriteLog(logMessage, false); // Csak a log fájlba írjuk ki
+                        WriteLog(logMessage, false, battleStartTime); // Csak a log fájlba írjuk ki
                     }
                 }
 
@@ -123,7 +124,7 @@ namespace ArenaGame
 
                         if (newHealth < quarterMaxHealth)
                         {
-                            WriteLog($"{hero.Name} meghalt a csata után, mivel túlságosan megsérült.", false);
+                            WriteLog($"{hero.Name} meghalt a csata után, mivel túlságosan megsérült.", false, battleStartTime);
                             hero.CurrentHealth = 0;
                         }
                         else
@@ -134,7 +135,7 @@ namespace ArenaGame
                         int damageTaken = previousHealth - hero.CurrentHealth;
 
                         string logMessage = $"{hero.Name} (#{hero.UniqueID}) életerő változás: {previousHealth} -> {hero.CurrentHealth} (-{damageTaken})";
-                        WriteLog(logMessage, false);
+                        WriteLog(logMessage, false, battleStartTime);
                     }
                 }
 
@@ -143,10 +144,10 @@ namespace ArenaGame
                 defender.Battle = 0;
 
                 aliveHeroes = aliveHeroes.Where(hero => hero.CurrentHealth > 0).ToList();
-                if ((!isFastBattle && aliveHeroes.Count > 1) || (isFastBattle && aliveHeroes.Count > 1))
+                if ((!isFastBattle && aliveHeroes.Count >= 1) || (isFastBattle && aliveHeroes.Count >= 1))
                 {
-                    WriteLog("-----------------------------Kör végi eredmény---------------------------");
-                    WriteLog(Table.DisplayHeroesTable(heroes)); // Kiírja az aktuális hőstáblázatot és kimenti
+                    WriteLog("-----------------------------Kör végi eredmény---------------------------", true, battleStartTime);
+                    WriteLog(Table.DisplayHeroesTable(heroes), true, battleStartTime); // Kiírja az aktuális hőstáblázatot és kimenti
                 }
                 else if (!isFastBattle)
                 {
@@ -169,12 +170,12 @@ namespace ArenaGame
 
             if (aliveHeroes.Count == 1)
             {
-                WriteLog($"{aliveHeroes[0].Name} a torna győztese!");
+                WriteLog($"{aliveHeroes[0].Name} a torna győztese!", true, battleStartTime);
                 var winners = aliveHeroes.Where(hero => hero.BattleCounter > 0).ToList();
 
                 if (winners.Count == 0)
                 {
-                    WriteLog("Ráadásul harc nélkül!!!");
+                    WriteLog("Ráadásul harc nélkül!!!", true, battleStartTime);
                 }
 
                 Console.WriteLine("--------------------------------Végső eredmény---------------------------");
@@ -186,10 +187,10 @@ namespace ArenaGame
             }
             else if (aliveHeroes.Count == 0)
             {
-                WriteLog($"{heroes.Last().Name} volt az utolsó csata nyertese, de végül meghalt a győzelem ellenére. Hiába nyerte meg az utolsó csatát, nem lett a tornának győztese. Így {heroes.Last().Name} csak tiszteletbeli győztes.");
+                WriteLog($"{heroes.Last().Name} volt az utolsó csata nyertese, de végül meghalt a győzelem ellenére. Hiába nyerte meg az utolsó csatát, nem lett a tornának győztese. Így {heroes.Last().Name} csak tiszteletbeli győztes.", true, battleStartTime);
             }
-            WriteLog("--------------------------------Végső eredmény---------------------------");
-            WriteLog(Table.DisplayHeroesTable(heroes));
+            WriteLog("--------------------------------Végső eredmény---------------------------",true, battleStartTime);
+            WriteLog(Table.DisplayHeroesTable(heroes), true, battleStartTime);
             Console.WriteLine("Nyomd meg az 'Enter' billentyűt a kilépéshez...");
             while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
             Environment.Exit(0);
@@ -249,15 +250,15 @@ namespace ArenaGame
             }
         }
 
-        private static void WriteLog(string text, bool writeToConsole = true)
+        private static void WriteLog(string text, bool writeToConsole, DateTime battleStartTime)
         {
             if (writeToConsole)
             {
                 Console.WriteLine(text);
             }
 
-            DateTime currentTime = DateTime.Now;
-            string logFileName = $"{currentTime.Year}_{currentTime.Month:00}_{currentTime.Day:00}_{currentTime.Hour:00}_{currentTime.Minute:00}.txt";
+            string battleTimeString = battleStartTime.ToString("yyyy_MM_dd_HH_mm_ss");
+            string logFileName = $"{battleTimeString}.txt";
             string logFilePath = Path.Combine("LOG", logFileName);
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath)); // Ellenőrzi és létrehozza a LOG mappát szükség esetén
 
@@ -266,6 +267,7 @@ namespace ArenaGame
                 writer.WriteLine(text);
             }
         }
+
 
 
     }
